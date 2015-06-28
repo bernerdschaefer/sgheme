@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 func prim_debug(e object) object {
 	DEBUG = true
@@ -127,8 +130,26 @@ func makePrimitives(env *environment) []primitive {
 		{"set-cdr!", prim_set_cdr},
 		{"list", prim_list},
 		{"error", prim_error},
+		{"load-file!", loadFileFn(env)},
 		{"eval", func(o object) object {
 			return eval(car(o), env)
 		}},
+	}
+}
+
+func loadFileFn(env *environment) func(o object) object {
+	return func(o object) object {
+		filename := car(o).(scmString)
+		f, err := os.Open(string(filename))
+		if err != nil {
+			return raiseError("unable to load file", filename, err)
+		}
+
+		s := newScanner(f)
+		for e := s.scanExpression(); e != EOF; e = s.scanExpression() {
+			eval(e, env)
+		}
+
+		return OK
 	}
 }

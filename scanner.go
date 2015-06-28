@@ -3,17 +3,20 @@ package main
 import (
 	"fmt"
 	"io"
-	"os"
 	"strconv"
 	"text/scanner"
 	"unicode"
 )
 
-var currentScanner *scanner.Scanner
+var EOF = scanner.EOF
 
-type scanner scanner.Scanner
+var currentScanner *scmScanner
 
-func newScanner(r io.Reader) *scanner.Scanner {
+type scmScanner struct {
+	scanner.Scanner
+}
+
+func newScanner(r io.Reader) *scmScanner {
 	var s scanner.Scanner
 
 	s.Init(r)
@@ -33,45 +36,45 @@ func newScanner(r io.Reader) *scanner.Scanner {
 			unicode.IsPrint(ch)
 	}
 
-	return &s
+	return &scmScanner{s}
 }
 
-func scanExpression() (x object) {
-	var tok = currentScanner.Scan()
+func (s *scmScanner) scanExpression() (x object) {
+	var tok = s.Scan()
 
 	for tok != scanner.EOF {
 		switch tok {
 
 		case scanner.Int:
-			i, _ := strconv.ParseInt(currentScanner.TokenText(), 10, 64)
+			i, _ := strconv.ParseInt(s.TokenText(), 10, 64)
 			return scmNumber(i)
 
 		case scanner.Float:
-			f, _ := strconv.ParseFloat(currentScanner.TokenText(), 64)
+			f, _ := strconv.ParseFloat(s.TokenText(), 64)
 			return scmNumber(f)
 
 		case scanner.String:
-			str := currentScanner.TokenText()
+			str := s.TokenText()
 			return scmString(str[1 : len(str)-1])
 
 		case ';':
-			skipComment()
-			tok = currentScanner.Scan()
+			s.skipComment()
+			tok = s.Scan()
 
 		case '\'':
 			return &cell{
 				scmSymbol("quote"),
-				&cell{scanExpression(), NIL},
+				&cell{s.scanExpression(), NIL},
 			}
 
 		case '(':
-			return scanList()
+			return s.scanList()
 
 		case ')':
 			return NIL
 
 		case scanner.Ident:
-			return scmSymbol(currentScanner.TokenText())
+			return scmSymbol(s.TokenText())
 
 		default:
 			panic(fmt.Sprintf("unknown token: %s", scanner.TokenString(tok)))
@@ -79,17 +82,16 @@ func scanExpression() (x object) {
 		}
 	}
 
-	os.Exit(0)
-	panic("unreachable")
+	return EOF
 }
 
-func scanList() object {
+func (s *scmScanner) scanList() object {
 	var (
 		current = &cell{cdr: NIL}
 		head    = current
 	)
 
-	for e := scanExpression(); e != NIL; e = scanExpression() {
+	for e := s.scanExpression(); e != NIL; e = s.scanExpression() {
 		new := &cell{car: e, cdr: NIL}
 		current.cdr = new
 		current = new
@@ -98,7 +100,7 @@ func scanList() object {
 	return head.cdr
 }
 
-func skipComment() {
-	for tok := currentScanner.Next(); tok != '\n' && tok != scanner.EOF; tok = currentScanner.Next() {
+func (s *scmScanner) skipComment() {
+	for tok := s.Next(); tok != '\n' && tok != scanner.EOF; tok = s.Next() {
 	}
 }

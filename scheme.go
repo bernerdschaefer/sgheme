@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 )
 
@@ -155,7 +156,11 @@ type scmSymbol string
 // read waits to read a complete expression from r
 // and returns it.
 func read() object {
-	return scanExpression()
+	e := currentScanner.scanExpression()
+	if e == EOF {
+		os.Exit(0)
+	}
+	return e
 }
 
 func raiseError(objects ...object) object {
@@ -165,7 +170,7 @@ func raiseError(objects ...object) object {
 		s = append(s, fmt.Sprint(o))
 	}
 
-	log.Fatal(strings.Join(s, " | "))
+	log.Panic(strings.Join(s, " | "))
 	return "unreachable"
 }
 
