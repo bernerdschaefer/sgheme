@@ -298,7 +298,19 @@
 ; and change value as in set-variable-value!,
 ; otherwise use add-binding-to-frame!
 (define (define-variable! var val env)
-  (add-binding-to-frame! var val (first-frame env)))
+  (if (eq? env the-empty-environment)
+    (error "cannot define variable on the empty environment")
+    (define-variable-in-frame!
+      var
+      val
+      (first-frame env))))
+
+(define (define-variable-in-frame! var val frame)
+  (define (scan vars vals)
+    (cond ((null? vars) (add-binding-to-frame! var val frame))
+          ((eq? var (car vars)) (set-car! vals val))
+          (else (scan (cdr vars) (cdr vals)))))
+  (scan (frame-variables frame) (frame-values frame)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; run the evaluator ;;
