@@ -278,15 +278,18 @@
 
 ;
 (define (lookup-variable-value var env)
-  (lookup-frame-variable-value var (first-frame env)))
+  (if (eq? env the-empty-environment)
+    (error "no variable found" var)
+    (lookup-frame-variable-value
+      var
+      (frame-variables (first-frame env))
+      (frame-values (first-frame env))
+      (enclosing-environment env))))
 
-(define (lookup-frame-variable-value var frame)
-  (lookup-frame-vars var (frame-variables frame) (frame-values frame)))
-
-(define (lookup-frame-vars var vars vals)
-  (cond ((null? vars) (error "no variable found" var))
+(define (lookup-frame-variable-value var vars vals next-env)
+  (cond ((null? vars) (lookup-variable-value var next-env))
         ((eq? var (car vars)) (car vals))
-        (else (lookup-frame-vars var (cdr vars) (cdr vals)))))
+        (else (lookup-frame-variable-value var (cdr vars) (cdr vals) next-env))))
 
 ; scan for variable and change when found
 (define (set-variable-value! var val env))
