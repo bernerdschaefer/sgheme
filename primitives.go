@@ -90,7 +90,13 @@ func prim_list(e object) object {
 }
 
 func prim_error(e object) object {
-	return raiseError(car(e))
+	var objects []object
+
+	for ; e != NIL; e = cdr(e) {
+		objects = append(objects, car(e))
+	}
+
+	return raiseError(objects...)
 }
 
 func prim_read(_ object) object {
