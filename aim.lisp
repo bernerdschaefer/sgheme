@@ -251,11 +251,11 @@
 (define (compound-procedure? exp)
   (tagged-list? exp 'procedure))
 (define (procedure-parameters exp)
-  (cadr p))
+  (cadr exp))
 (define (procedure-body exp)
-  (caddr p))
+  (caddr exp))
 (define (procedure-environment exp)
-  (cadddr p))
+  (cadddr exp))
 
 ; environments
 
@@ -270,7 +270,7 @@
 (define (frame-values frame) (cdr frame))
 (define (add-binding-to-frame! var val frame)
   (set-car! frame (cons var (frame-variables frame)))
-  (set-cdr! frame (cons var (frame-values frame))))
+  (set-cdr! frame (cons val (frame-values frame))))
 
 ; TODO: error checking
 (define (extend-environment vars vals base-env)
@@ -284,7 +284,7 @@
   (lookup-frame-vars var (frame-variables frame) (frame-values frame)))
 
 (define (lookup-frame-vars var vars vals)
-  (cond ((null? vars) (error "no variable found"))
+  (cond ((null? vars) (error "no variable found" var))
         ((eq? var (car vars)) (car vals))
         (else (lookup-frame-vars var (cdr vars) (cdr vals)))))
 
