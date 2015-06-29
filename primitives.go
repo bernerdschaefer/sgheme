@@ -27,16 +27,17 @@ func prim_symbol(e object) object {
 }
 
 func prim_number(e object) object {
-	if _, ok := e.(scmNumber); ok {
+	if _, ok := car(e).(scmNumber); ok {
 		return TRUE
 	}
 	return FALSE
 }
 
 func prim_string(e object) object {
-	if _, ok := e.(scmString); ok {
+	if _, ok := car(e).(scmString); ok {
 		return TRUE
 	}
+
 	return FALSE
 }
 
@@ -62,7 +63,7 @@ func prim_eq(e object) object {
 }
 
 func prim_not(e object) object {
-	if e == FALSE {
+	if car(e) == FALSE {
 		return TRUE
 	}
 
