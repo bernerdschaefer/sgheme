@@ -41,7 +41,7 @@ func prim_string(e object) object {
 }
 
 func prim_pair(e object) object {
-	if c, ok := e.(*cell); ok && c != NIL {
+	if c, ok := car(e).(*cell); ok && c != NIL {
 		return TRUE
 	}
 	return FALSE

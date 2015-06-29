@@ -312,7 +312,6 @@
 ; we'll need to (define apply-in-underlying-scheme apply)
 ; before evaluating the metacircular apply
 (define (apply-primitive-procedure proc args)
-  (display args)
   (apply-in-underlying-scheme
     (primitive-implementation proc) args))
 
