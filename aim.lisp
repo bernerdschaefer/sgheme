@@ -38,11 +38,25 @@
 (define (cdddar x)      (cdr (cdr (cdr (car x)))))
 (define (cddddr x)      (cdr (cdr (cdr (cdr x)))))
 
+
+; data-driven syntax!
+(define syntax-rules '())
+
+(define (add-syntax! cond-fn action-fn)
+  (set! syntax-rules (cons (list cond-fn action-fn) syntax-rules)))
+
+;define in backwards precedence order
+; (add-syntax!
+;   (lambda (exp _) (variable? exp))
+;   (lambda (exp env) (lookup-variable-value exp env)))
+
+(add-syntax!
+  (lambda (exp _) (self-evaluating? exp))
+  (lambda (exp _) exp))
 ; end bernerd
 
-
 (define (eval exp env)
-  (cond ((self-evaluating? exp) exp)
+  (cond ; ((self-evaluating? exp) exp)
         ((variable? exp) (lookup-variable-value exp env))
         ((quoted? exp) (text-of-quotation exp))
         ((assignment? exp) (eval-assignment exp env))
@@ -66,6 +80,19 @@
                   env)))
         (else
           (error "Unknown expression type: EVAL" exp))))
+
+; bernerd
+(define eval-fallback eval)
+
+(define (eval-syntax exp env rules)
+  (cond ((null? rules) (eval-fallback exp env))
+        (((caar rules) exp env)
+         ((cadar rules) exp env))
+        (else (eval-syntax exp env (cdr rules)))))
+
+(define (eval exp env)
+  (eval-syntax exp env syntax-rules))
+; end bernerd
 
 (define (apply procedure arguments)
   (cond ((primitive-procedure? procedure)
