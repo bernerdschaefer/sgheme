@@ -71,7 +71,7 @@ func (s *scmScanner) scanExpression() (x object) {
 			return s.scanList()
 
 		case ')':
-			return NIL
+			return ')'
 
 		case scanner.Ident:
 			return scmSymbol(s.TokenText())
@@ -91,7 +91,7 @@ func (s *scmScanner) scanList() object {
 		head    = current
 	)
 
-	for e := s.scanExpression(); e != NIL; e = s.scanExpression() {
+	for e := s.scanExpression(); e != ')'; e = s.scanExpression() {
 		new := &cell{car: e, cdr: NIL}
 		current.cdr = new
 		current = new
