@@ -96,14 +96,14 @@ func evalCond(e object, env *environment) object {
 	for ; clauses != NIL; clauses = cdr(clauses) {
 		var (
 			predicate = car(car(clauses))
-			actions   = car(cdr(car(clauses)))
+			actions   = cdr(car(clauses))
 		)
 
 		switch {
 		case predicate == scmSymbol("else"):
-			return eval(actions, env)
+			return evalSequence(actions, env)
 		case eval(predicate, env) != FALSE:
-			return eval(actions, env)
+			return evalSequence(actions, env)
 		}
 	}
 
