@@ -1,11 +1,18 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 )
 
 func main() {
+	var (
+		sicp = flag.Bool("sicp", false, "enter directly to sicp evaluator")
+	)
+
+	flag.Parse()
+
 	env := &environment{
 		values: map[object]object{
 			scmSymbol("true"):  TRUE,
@@ -18,6 +25,15 @@ func main() {
 	}
 
 	currentScanner = newScanner(os.Stdin)
+
+	if *sicp {
+		env.values[scmSymbol("load-file!")].(primitive).Call(&cell{
+			car: scmString("aim.lisp"),
+			cdr: NIL,
+		})
+
+		return
+	}
 
 	for {
 		fmt.Printf("> ")
