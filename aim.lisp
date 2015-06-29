@@ -121,8 +121,8 @@
 ; syntax definition
 
 (define (self-evaluating? exp)
-  (cond ((number? exp) exp)
-        ((string? exp) exp)
+  (cond ((number? exp) true)
+        ((string? exp) true)
         (else false)))
 
 (define (variable? exp) (symbol? exp))
