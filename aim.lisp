@@ -292,7 +292,17 @@
         (else (lookup-frame-variable-value var (cdr vars) (cdr vals) next-env))))
 
 ; scan for variable and change when found
-(define (set-variable-value! var val env))
+(define (set-variable-value! var val env)
+  (if (eq? env the-empty-environment)
+    (error "cannot set variable on the empty environment")
+    (set-variable-in-frame! var val (first-frame env) (enclosing-environment env))))
+
+(define (set-variable-in-frame! var val frame next-env)
+  (define (scan vars vals)
+    (cond ((null? vars) (set-variable-value! var val next-env))
+          ((eq? var (car vars)) (set-car! vals val))
+          (else (scan (cdr vars) (cdr vals)))))
+  (scan (frame-variables frame) (frame-values frame)))
 
 ; scan first frame for existing variable
 ; and change value as in set-variable-value!,
