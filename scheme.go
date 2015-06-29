@@ -34,6 +34,9 @@ func evalCell(e *cell, env *environment) object {
 	switch e.car {
 	case scmSymbol("quote"):
 		return car(e.cdr)
+	case scmSymbol("set!"):
+		set(car(cdr(e)), car(cdr(cdr(e))), env)
+		return OK
 	case scmSymbol("define"):
 		define(e, env)
 		return OK
@@ -172,6 +175,19 @@ func raiseError(objects ...object) object {
 
 	log.Panic(strings.Join(s, " | "))
 	return "unreachable"
+}
+
+func set(variable, val object, env *environment) object {
+	val = eval(val, env)
+
+	for ; env != nil; env = env.outer {
+		if _, ok := env.values[variable]; ok {
+			env.values[variable] = val
+			return OK
+		}
+	}
+
+	return raiseError("variable not in environment", variable)
 }
 
 func define(definition object, env *environment) object {
