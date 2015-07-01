@@ -159,7 +159,7 @@ type scmSymbol string
 // read waits to read a complete expression from r
 // and returns it.
 func read() object {
-	e := currentScanner.scanExpression()
+	e := currentScanner.read()
 	if e == EOF {
 		os.Exit(0)
 	}

@@ -153,7 +153,7 @@ func loadFileFn(env *environment) func(o object) object {
 		}
 
 		s := newScanner(f)
-		for e := s.scanExpression(); e != EOF; e = s.scanExpression() {
+		for e := s.read(); e != EOF; e = s.read() {
 			eval(e, env)
 		}
 

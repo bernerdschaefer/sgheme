@@ -8,7 +8,7 @@ import (
 	"unicode"
 )
 
-var EOF = scanner.EOF
+const EOF = scanner.EOF
 
 var currentScanner *scmScanner
 
@@ -39,11 +39,14 @@ func newScanner(r io.Reader) *scmScanner {
 	return &scmScanner{s}
 }
 
-func (s *scmScanner) scanExpression() (x object) {
+func (s *scmScanner) read() object {
 	var tok = s.Scan()
 
-	for tok != scanner.EOF {
+	for tok != EOF {
 		switch tok {
+
+		case scanner.Ident:
+			return scmSymbol(s.TokenText())
 
 		case scanner.Int:
 			i, _ := strconv.ParseInt(s.TokenText(), 10, 64)
@@ -62,22 +65,13 @@ func (s *scmScanner) scanExpression() (x object) {
 			tok = s.Scan()
 
 		case '\'':
-			return &cell{
-				scmSymbol("quote"),
-				&cell{s.scanExpression(), NIL},
-			}
+			return s.readQuoted()
 
 		case '(':
-			return s.scanList()
-
-		case ')':
-			return ')'
-
-		case scanner.Ident:
-			return scmSymbol(s.TokenText())
+			return s.readList()
 
 		default:
-			panic(fmt.Sprintf("unknown token: %s", scanner.TokenString(tok)))
+			panic(fmt.Sprintf("Syntax error, invalid token: %s", scanner.TokenString(tok)))
 
 		}
 	}
@@ -85,22 +79,47 @@ func (s *scmScanner) scanExpression() (x object) {
 	return EOF
 }
 
-func (s *scmScanner) scanList() object {
+func (s *scmScanner) readList() object {
 	var (
 		current = &cell{cdr: NIL}
 		head    = current
 	)
 
-	for e := s.scanExpression(); e != ')'; e = s.scanExpression() {
+	for {
+		switch s.Peek() {
+		case ')':
+			s.Next()
+			return head.cdr
+
+		case EOF:
+			return EOF
+		}
+
+		e := s.read()
+
+		if e == EOF {
+			return EOF
+		}
+
 		new := &cell{car: e, cdr: NIL}
 		current.cdr = new
 		current = new
 	}
+}
 
-	return head.cdr
+func (s *scmScanner) readQuoted() object {
+	e := s.read()
+	if e == EOF {
+		return EOF
+	}
+
+	return &cell{
+		scmSymbol("quote"),
+		&cell{e, NIL},
+	}
 }
 
 func (s *scmScanner) skipComment() {
-	for tok := s.Next(); tok != '\n' && tok != scanner.EOF; tok = s.Next() {
+	for tok := s.Next(); tok != '\n' && tok != EOF; tok = s.Next() {
 	}
 }
