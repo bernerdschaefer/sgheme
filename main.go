@@ -28,7 +28,7 @@ func main() {
 
 	if *sicp {
 		env.values[scmSymbol("load-file!")].(primitive).Call(&cell{
-			car: scmString("aim.lisp"),
+			car: scmString("sicp.lisp"),
 			cdr: NIL,
 		})
 
