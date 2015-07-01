@@ -36,7 +36,22 @@ func main() {
 	}
 
 	for {
-		fmt.Printf("> ")
-		fmt.Printf("%s\n", eval(read(), env))
+		rep(env)
 	}
+}
+
+func rep(env *environment) {
+	defer func() {
+		if err := recover(); err != nil {
+			if sErr, ok := err.(scmError); ok {
+				fmt.Printf("%s\n", sErr)
+				return
+			}
+
+			panic(err)
+		}
+	}()
+
+	fmt.Printf("> ")
+	fmt.Printf("%s\n", eval(read(), env))
 }

@@ -1,8 +1,8 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 )
@@ -164,17 +164,6 @@ func read() object {
 		os.Exit(0)
 	}
 	return e
-}
-
-func raiseError(objects ...object) object {
-	var s []string
-
-	for _, o := range objects {
-		s = append(s, fmt.Sprint(o))
-	}
-
-	log.Panic(strings.Join(s, " | "))
-	return "unreachable"
 }
 
 func set(variable, val object, env *environment) object {
@@ -344,4 +333,19 @@ type procedure struct {
 
 func (p *procedure) String() string {
 	return fmt.Sprintf("(lambda %s %s)", p.parameters, p.body)
+}
+
+//////
+
+// scmError is currently opaque from within the scheme environment.
+type scmError error
+
+func raiseError(objects ...object) object {
+	var s []string
+
+	for _, o := range objects {
+		s = append(s, fmt.Sprint(o))
+	}
+
+	panic(errors.New(strings.Join(s, " | ")))
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"strconv"
 	"text/scanner"
@@ -71,7 +70,10 @@ func (s *scmScanner) read() object {
 			return s.readList()
 
 		default:
-			panic(fmt.Sprintf("Syntax error, invalid token: %s", scanner.TokenString(tok)))
+			return raiseError(
+				"Syntax error, invalid token",
+				scanner.TokenString(tok),
+			)
 
 		}
 	}
