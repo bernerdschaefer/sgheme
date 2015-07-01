@@ -65,6 +65,15 @@ func evalCell(e *cell, env *environment) object {
 
 		return eval(alternative, env)
 
+	case scmSymbol("with-error-handler"):
+		// (with-error-handler
+		//   (lambda (err) (display err))
+		//   (lambda () (eval (read))))
+		return withErrorHandler(
+			eval(car(cdr(e)), env),
+			eval(car(cdr(cdr(e))), env),
+		)
+
 	default: // application
 		return apply(
 			eval(e.car, env),
@@ -131,6 +140,21 @@ func evalList(o object, env *environment) object {
 		eval(car(o), env),
 		evalList(cdr(o), env),
 	)
+}
+
+func withErrorHandler(handler, thunk object) (retval object) {
+	defer func() {
+		if err := recover(); err != nil {
+			if sErr, ok := err.(scmError); ok {
+				retval = apply(handler, &cell{sErr, NIL})
+				return
+			}
+
+			panic(err)
+		}
+	}()
+
+	return apply(thunk, NIL)
 }
 
 type object interface{}

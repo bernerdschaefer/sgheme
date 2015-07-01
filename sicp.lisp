@@ -403,9 +403,12 @@
 
 (define (driver-loop)
   (prompt-for-input input-prompt)
-  (announce
-    output-prompt
-    (eval (read) the-global-environment))
+  (with-error-handler                             ; bernerd
+    (lambda (err) (display err))
+    (lambda ()
+      (announce
+        output-prompt
+        (eval (read) the-global-environment))))
   (driver-loop))
 
 (define (announce prompt output)
