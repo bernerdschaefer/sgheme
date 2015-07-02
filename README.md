@@ -60,17 +60,17 @@ A partial list of things I've been reading through for inspiration.
   [The Roots of Lisp]: http://www.paulgraham.com/rootsoflisp.html
   [SICP]: http://sarabander.github.io/sicp/
   [micro-manual]: http://www.cse.sc.edu/~mgv/csce330f13/micromanualLISP.pdf
-  [AIM-453]: ftp://publications.ai.mit.edu/ai-publications/pdf/AIM-453.pdf
+  [AIM-453]: http://repository.readscheme.org/ftp/papers/ai-lab-pubs/AIM-453.pdf
   [SRFI]: http://srfi.schemers.org/
   [c2]: http://c2.com/cgi/wiki
 
 ## TODO
 
-  [ ] read more of SICP and create more TODOs
-  [ ] implement `cond` in sicp lisp
-  [ ] tail-call optimization
-  [?] not broken scanner
-  [x] error handling without killing the process
+  - [ ] read more of SICP and create more TODOs
+  - [ ] implement `cond` in sicp lisp
+  - [ ] tail-call optimization
+  - [x] not broken scanner
+  - [x] error handling without killing the process
 
 ## License
 
