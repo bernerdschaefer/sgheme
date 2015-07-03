@@ -68,7 +68,7 @@ A partial list of things I've been reading through for inspiration.
 
   - [ ] read more of SICP and create more TODOs
   - [ ] implement `cond` in sicp lisp
-  - [ ] tail-call optimization
+  - [x] tail-call optimization
   - [x] not broken scanner
   - [x] error handling without killing the process
 

@@ -14,19 +14,27 @@ func eval(exp object, env *environment) object {
 		fmt.Printf("evaluating: %s\n", exp)
 	}
 
-	switch e := exp.(type) {
-	case scmNumber:
-		return exp
-	case scmString:
-		return exp
-	case scmSymbol:
-		return lookupVariableValue(exp, env)
-	case *procedure:
-		return exp
-	case *cell:
-		return evalCell(e, env)
-	default:
-		return raiseError("Unknown expression type: EVAL", exp)
+	for {
+		switch e := exp.(type) {
+		case scmNumber:
+			return exp
+		case scmString:
+			return exp
+		case scmSymbol:
+			return lookupVariableValue(exp, env)
+		case *procedure:
+			return exp
+		case *cell:
+			exp = evalCell(e, env)
+			if f, ok := exp.(*tailCall); ok {
+				exp = f.f
+				env = f.env
+				continue
+			}
+			return exp
+		default:
+			return raiseError("Unknown expression type: EVAL", exp)
+		}
 	}
 }
 
@@ -122,13 +130,33 @@ func evalCond(e object, env *environment) object {
 	return FALSE
 }
 
-func evalSequence(exps object, env *environment) object {
-	if cdr(exps) == NIL {
-		return eval(car(exps), env)
+type tailCall struct {
+	f   object
+	env *environment
+}
+
+// forceTailCall evaluates o immediately if it is a tail call.
+// Otherwise it returns the object unmodified.
+func forceTailCall(o object) object {
+	if f, ok := o.(*tailCall); ok {
+		return eval(f.f, f.env)
 	}
 
-	eval(car(exps), env)
-	return evalSequence(cdr(exps), env)
+	return o
+}
+
+// evalSequence evaluates the list of objects in exps.
+// The last item in the list is returned
+// as a special tailCall value which the evaluator inlines.
+func evalSequence(exps object, env *environment) object {
+	for {
+		if cdr(exps) == NIL {
+			return &tailCall{car(exps), env}
+		}
+
+		eval(car(exps), env)
+		exps = cdr(exps)
+	}
 }
 
 func evalList(o object, env *environment) object {
@@ -142,11 +170,17 @@ func evalList(o object, env *environment) object {
 	)
 }
 
+// withErrorHandler calls thunk and returns its value
+// unless there's an error, in which case
+// it calls handler and returns its value.
+//
+// Note that tail-calls are forced to keep a stack frame,
+// so this should not be called recursively.
 func withErrorHandler(handler, thunk object) (retval object) {
 	defer func() {
 		if err := recover(); err != nil {
 			if sErr, ok := err.(scmError); ok {
-				retval = apply(handler, &cell{sErr, NIL})
+				retval = forceTailCall(apply(handler, &cell{sErr, NIL}))
 				return
 			}
 
@@ -154,7 +188,7 @@ func withErrorHandler(handler, thunk object) (retval object) {
 		}
 	}()
 
-	return apply(thunk, NIL)
+	return forceTailCall(apply(thunk, NIL))
 }
 
 type object interface{}
