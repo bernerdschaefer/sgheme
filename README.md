@@ -55,6 +55,8 @@ A partial list of things I've been reading through for inspiration.
   - [A Micro-Manual for LISP - Not the Whole Truth][micro-manual]
   - [The Art of the Interpreter][AIM-453]
   - [SRFI]
+  - [Compiling Scheme to C]
+  - [Scheme 9]
   - Many random things from the [ContentCreationWiki][c2].
 
   [The Roots of Lisp]: http://www.paulgraham.com/rootsoflisp.html
@@ -63,6 +65,8 @@ A partial list of things I've been reading through for inspiration.
   [AIM-453]: http://repository.readscheme.org/ftp/papers/ai-lab-pubs/AIM-453.pdf
   [SRFI]: http://srfi.schemers.org/
   [c2]: http://c2.com/cgi/wiki
+  [Scheme 9]: http://www.t3x.org/s9fes/
+  [Compiling Scheme to C]: http://matt.might.net/articles/compiling-scheme-to-c/
 
 ## TODO
 
