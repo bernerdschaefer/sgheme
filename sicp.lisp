@@ -5,7 +5,6 @@
     (cons (proc (car args)) (map proc (cdr args)))))
 (define apply-in-underlying-scheme apply)
 (define (newline) (display ""))
-(define (cond?) false)
 
 ; shorthand
 ; from http://www.lispworks.com/documentation/HyperSpec/Body/f_car_c.htm
@@ -211,6 +210,30 @@
   (cons 'lambda (cons parameters body)))
 
 ; conditionals
+
+(define (cond? exp) (tagged-list? exp 'cond))
+(define (cond-clauses exp) (cdr exp))
+(define (cond-else-clause? clause)
+  (eq? (cond-predicate clause) 'else))
+(define (cond-predicate clause)
+  (car clause))
+(define (cond-actions clause)
+  (cdr clause))
+
+(define (cond->if exp)
+  (expand-clauses (cond-clauses exp)))
+
+(define (expand-clauses clauses)
+  (if (null? clauses)
+    false
+    ((lambda (clause)
+       (if (cond-else-clause? clause)
+         (sequence->exp (cond-actions clause))
+         (make-if
+           (cond-predicate clause)
+           (sequence->exp (cond-actions clause))
+           (expand-clauses (cdr clauses)))))
+     (car clauses))))
 
 ; (if <predicate> <consequant> <alternative>)
 ; (if <predicate> <consequant>) ; => 'false
