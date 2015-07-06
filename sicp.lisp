@@ -52,6 +52,29 @@
 (add-syntax!
   (lambda (exp _) (self-evaluating? exp))
   (lambda (exp _) exp))
+
+; syntax transformation for let to lambda.
+(define (let? exp) (tagged-list? exp 'let))
+
+(define (let-variables exp) (cadr exp))
+(define (let-variable-names exp)
+  (map car (let-variables exp)))
+(define (let-expressions exp)
+  (map cadr (let-variables exp)))
+(define (let-body exp) (cddr exp))
+
+; (let ((var1 exp1) (varn expn)) body)
+; -> ((lambda (var1 varn) body) exp1 expn)
+(define (let->lambda exp)
+  (cons
+    (make-lambda
+      (let-variable-names exp)
+      (let-body exp))
+    (let-expressions exp)))
+
+(add-syntax!
+  (lambda (exp _) (let? exp))
+  (lambda (exp env) (eval (let->lambda exp) env)))
 ; end bernerd
 
 (define (eval exp env)
