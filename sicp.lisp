@@ -264,7 +264,7 @@
 (define (if-predicate exp) (cadr exp))
 (define (if-consequant exp) (caddr exp))
 (define (if-alternative exp)
-  (if (not (null? (cdddr)))
+  (if (not (null? (cdddr exp)))
     (cadddr exp)
     'false))
 
