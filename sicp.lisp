@@ -75,6 +75,27 @@
 (add-syntax!
   (lambda (exp _) (let? exp))
   (lambda (exp env) (eval (let->lambda exp) env)))
+
+; and
+(add-syntax!
+  (lambda (exp _) (tagged-list? exp 'and))
+  (lambda (exp env) (eval (and->if exp) env)))
+
+; (and) ; => true
+; (and 'false (loop)) ; => false
+; (and 'a 'b 'c); => 'c
+
+(define (and->if exp)
+  (expand-and (cdr exp)))
+
+(define (expand-and clauses)
+  (cond ((null? clauses) true)
+        ((last-exp? clauses) (car clauses))
+        (else (make-if
+                (car clauses)
+                (expand-and (cdr clauses))
+                false))))
+
 ; end bernerd
 
 (define (eval exp env)
