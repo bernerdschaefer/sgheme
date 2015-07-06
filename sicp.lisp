@@ -96,6 +96,39 @@
                 (expand-and (cdr clauses))
                 false))))
 
+; or
+;
+;   (or) ; => false
+;   (or 'a) ; => a
+;   (or false false 'a) ; => a
+;   (or false 'a (error)) ; => a
+;   (or false false false) ; => false
+(add-syntax!
+  (lambda (exp _) (tagged-list? exp 'or))
+  (lambda (exp env) (eval-or (cdr exp) env)))
+
+(define (eval-or clauses env)
+  (if (null? clauses)
+    false
+    ((lambda (x)
+       (if x x (eval-or (cdr clauses) env)))
+     (eval (car clauses) env))))
+
+; the expansion below is non-hygenic,
+; but the alternative seems to require
+; evaluating the causes twice.
+(define (or->if exp)
+  (expand-or (cdr exp)))
+(define (expand-or clauses)
+  (cond ((null? clauses) false)
+        (else
+          (list
+            (make-lambda
+              '(x)
+              (list
+                (make-if 'x 'x (expand-or (cdr clauses)))))
+            (car clauses)))))
+
 ; end bernerd
 
 (define (eval exp env)
