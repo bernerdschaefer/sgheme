@@ -13,6 +13,8 @@ var currentScanner *scmScanner
 
 type scmScanner struct {
 	scanner.Scanner
+
+	expectedCloses int
 }
 
 func newScanner(r io.Reader) *scmScanner {
@@ -35,7 +37,7 @@ func newScanner(r io.Reader) *scmScanner {
 			unicode.IsPrint(ch)
 	}
 
-	return &scmScanner{s}
+	return &scmScanner{Scanner: s}
 }
 
 func (s *scmScanner) read() object {
@@ -69,6 +71,13 @@ func (s *scmScanner) read() object {
 		case '(':
 			return s.readList()
 
+		case ')':
+			if s.expectedCloses > 0 {
+				return ')'
+			}
+
+			fallthrough
+
 		default:
 			return raiseError(
 				"Syntax error, invalid token",
@@ -88,19 +97,15 @@ func (s *scmScanner) readList() object {
 	)
 
 	for {
-		switch s.Peek() {
-		case ')':
-			s.Next()
-			return head.cdr
+		s.expectedCloses++
+		e := s.read()
+		s.expectedCloses--
 
+		switch e {
 		case EOF:
 			return EOF
-		}
-
-		e := s.read()
-
-		if e == EOF {
-			return EOF
+		case ')':
+			return head.cdr
 		}
 
 		new := &cell{car: e, cdr: NIL}
